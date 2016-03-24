@@ -634,11 +634,11 @@ testVim('dj_end_of_document', function(cm, vim, helpers) {
   var curStart = makeCursor(0, 3);
   cm.setCursor(curStart);
   helpers.doKeys('d', 'j');
-  eq(' word1 ', cm.getValue());
+  eq('', cm.getValue());
   var register = helpers.getRegisterController().getRegister();
-  eq('', register.toString());
-  is(!register.linewise);
-  helpers.assertCursorAt(0, 3);
+  eq(' word1 \n', register.toString());
+  is(register.linewise);
+  helpers.assertCursorAt(0, 0);
 }, { value: ' word1 ' });
 testVim('dk', function(cm, vim, helpers) {
   var curStart = makeCursor(1, 3);
@@ -654,11 +654,11 @@ testVim('dk_start_of_document', function(cm, vim, helpers) {
   var curStart = makeCursor(0, 3);
   cm.setCursor(curStart);
   helpers.doKeys('d', 'k');
-  eq(' word1 ', cm.getValue());
+  eq('', cm.getValue());
   var register = helpers.getRegisterController().getRegister();
-  eq('', register.toString());
-  is(!register.linewise);
-  helpers.assertCursorAt(0, 3);
+  eq(' word1 \n', register.toString());
+  is(register.linewise);
+  helpers.assertCursorAt(0, 0);
 }, { value: ' word1 ' });
 testVim('dw_space', function(cm, vim, helpers) {
   var curStart = makeCursor(0, 0);
@@ -3725,6 +3725,14 @@ testVim('ex_noh_clearSearchHighlight', function(cm, vim, helpers) {
   helpers.doKeys('n');
   helpers.assertCursorAt(0, 11,'can\'t resume search after clearing highlighting');
 }, { value: 'match nope match \n nope Match' });
+testVim('ex_yank', function (cm, vim, helpers) {
+  var curStart = makeCursor(3, 0);
+  cm.setCursor(curStart);
+  helpers.doEx('y');
+  var register = helpers.getRegisterController().getRegister();
+  var line = cm.getLine(3);
+  eq(line + '\n', register.toString());
+});
 testVim('set_boolean', function(cm, vim, helpers) {
   CodeMirror.Vim.defineOption('testoption', true, 'boolean');
   // Test default value is set.

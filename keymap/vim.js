@@ -226,6 +226,7 @@
     { name: 'sort', shortName: 'sor' },
     { name: 'substitute', shortName: 's', possiblyAsync: true },
     { name: 'nohlsearch', shortName: 'noh' },
+    { name: 'yank', shortName: 'y' },
     { name: 'delmarks', shortName: 'delm' },
     { name: 'registers', shortName: 'reg', excludeFromCommandHistory: true },
     { name: 'global', shortName: 'g' }
@@ -1696,11 +1697,12 @@
         var line = motionArgs.forward ? cur.line + repeat : cur.line - repeat;
         var first = cm.firstLine();
         var last = cm.lastLine();
-        // Vim cancels linewise motions that start on an edge and move beyond
-        // that edge. It does not cancel motions that do not start on an edge.
-        if ((line < first && cur.line == first) ||
-            (line > last && cur.line == last)) {
-          return;
+        // Vim go to line begin or line end when cursor at first/last line and
+        // move to previous/next line is triggered.
+        if (line < first && cur.line == first){
+          return this.moveToStartOfLine(cm, head, motionArgs, vim);
+        }else if (line > last && cur.line == last){
+            return this.moveToEol(cm, head, motionArgs, vim);
         }
         if (motionArgs.toFirstChar){
           endCh=findFirstNonWhiteSpaceCharacter(cm.getLine(line));
@@ -4520,6 +4522,13 @@
       },
       nohlsearch: function(cm) {
         clearSearchHighlight(cm);
+      },
+      yank: function (cm) {
+        var cur = copyCursor(cm.getCursor());
+        var line = cur.line;
+        var lineText = cm.getLine(line);
+        vimGlobalState.registerController.pushText(
+          '0', 'yank', lineText, true, true);
       },
       delmarks: function(cm, params) {
         if (!params.argString || !trim(params.argString)) {
